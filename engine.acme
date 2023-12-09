@@ -22,7 +22,7 @@
 
 CONTROL_Y_MASK      = %10111111 ; bitmap mode
 LINE_0              = FIRST_BADLINE-3
-SCROLL_SPEED        = 1 ; supported are 1 or 2
+SCROLL_SPEED        = 4 ; supported are 1, 2 (8 directions) and 4 (4 directions)
 TILE_COLS           = 3 ; 40 - 1 / 3 = whole number = 13
 TILE_ROWS           = 2 ; 23 - 1 / 2 = whole number = 11
 SCR_COLS            = 40 ; horizontal screen chars in memory. the screen is in 38x24 mode
@@ -34,10 +34,10 @@ SPRITES_TOP_Y       = 60 ; sprite position in fld/crunch area, can be somewhere 
 SPRITES_MAX_Y       = 229 ; the lower, the more off-screen raster time we have to do other things
 TILES               = 185 ; TODO: calculate this with pixels.bin size / 8 / TILE_COLS / TILE_ROWS
 COPY_ROW_FRAMES     = 2 ; use 2 frames to copy all rows, vertically
-!if SCROLL_SPEED = 2 {
-COPY_COL_FRAMES     = 2 ; use 2 frames to copy all cols, horizontally
-} else {
+!if SCROLL_SPEED = 1 {
 COPY_COL_FRAMES     = 4 ; use 4 frames to copy all cols, horizontally
+} else {
+COPY_COL_FRAMES     = 2 ; use 2 frames to copy all cols, horizontally
 }
 
 *=SPR_DATA
@@ -175,6 +175,8 @@ SPR_F
     stx CTRL_Y_INVALID
 
     ldx #0
+    stx SOFT_X
+    stx SOFT_Y
     stx C_COPY
     stx R_COPY
     stx SCROLL_U_D
