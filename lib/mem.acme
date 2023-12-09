@@ -58,6 +58,7 @@ PLAY            = $32
 CTRL_Y_INVALID  = $33
 INIT_SCREEN_LO  = $34
 INIT_SCREEN_HI  = $35
+LOADED          = $36
 
 SPR_I           = $40; - $57
 SPR_Y           = $58; - $6f

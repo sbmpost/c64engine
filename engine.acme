@@ -22,7 +22,7 @@
 
 CONTROL_Y_MASK      = %10111111 ; bitmap mode
 LINE_0              = FIRST_BADLINE-3
-SCROLL_SPEED        = 4 ; supported are 1, 2 (8 directions) and 4 (4 directions)
+SCROLL_SPEED        = 2 ; supported are 1, 2 (8 directions) and 4 (4 directions)
 TILE_COLS           = 3 ; 40 - 1 / 3 = whole number = 13
 TILE_ROWS           = 2 ; 23 - 1 / 2 = whole number = 11
 SCR_COLS            = 40 ; horizontal screen chars in memory. the screen is in 38x24 mode
