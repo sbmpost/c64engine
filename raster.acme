@@ -3,14 +3,14 @@
 }
 
 !if SPRITES = 0 {
-!macro inc_vic_control_y {
+!macro inc_vic_control_y_zone {
     lda VIC_CONTROL_Y                       ;  4
     clc                                     ;  2
     adc #1                                  ;  2
     and #%00000111                          ;  2
     adc #CONTROL_Y_INVALID                  ;  2
     sta VIC_CONTROL_Y                       ;  4
-}                                           ;--> 16
+}
 } else {
 inc_vic_control_y_zone !zone {
     lda VIC_CONTROL_Y                       ;  4
@@ -118,7 +118,7 @@ SOFT_X = *+1
     lda CTRL_Y_INVALID                      ;  3
 }
     sta VIC_CONTROL_Y                       ;  4
-                                            ;--> 6/7
+                                            ;-->  7
 
     lda #SCR_ROWS                           ;  2
     sec                                     ;  2
@@ -137,7 +137,7 @@ SOFT_Y = *+1
     ora #CONTROL_Y_INVALID                  ;  2
     ; spill pre-computed value
     pha                                     ;  3
-                                            ;--> 13/14
+                                            ;--> 14
 
 !if SPRITES = 0 {
     +wait_loop 63 - 3 - 6 - 8 - 13 - 20 - 4
@@ -150,9 +150,8 @@ SOFT_Y = *+1
 .fld_loop
     cpx #0                                  ;  2
     beq +                                   ;  2 (in this loop)
-
 !if SPRITES = 0 {
-    +inc_vic_control_y                      ; 16
+    +inc_vic_control_y_zone                 ; 16
     +wait_loop 63 - 20 - 2 - 3
 } else {
     jsr inc_vic_control_y_zone              ; 22 + 6 (jsr)
@@ -160,7 +159,7 @@ SOFT_Y = *+1
     cmp #SPRITES_TOP_Y                      ;  2
     bcs .sprite_rows_fld_wait               ;  2/3
     +wait_loop 63 - 32 - 2 - 3 - 4 - 2 - 2
-}
+}                                           ;--> 32
 
     dex                                     ;  2
     jmp .fld_loop                           ;  3
@@ -171,17 +170,16 @@ SOFT_Y = *+1
 .crunch_loop
     cpx #0                                  ;  2
     beq +                                   ;  2 (in this loop)
-
 !if SPRITES = 0 {
-    +inc_vic_control_y                      ; 16
+    +inc_vic_control_y_zone                 ; 16
     +wait_loop 63 - 20 - 2 - 3
 } else {
     jsr inc_vic_control_y_zone              ; 22 + 6 (jsr)
     lda VIC_RASTER                          ;  4
     cmp #SPRITES_TOP_Y                      ;  2
     bcs .sprite_rows_crunch_wait            ;  2/3
-    +wait_loop 63 - 32 - 4 - 2 - 2 - 2 - 3
-}
+    +wait_loop 63 - 32 - 2 - 3 - 4 - 2 - 2
+}                                           ;--> 32
 
     dex                                     ;  2
     jmp .crunch_loop                        ;  3
@@ -192,7 +190,7 @@ SOFT_Y = *+1
     cpx #0                                  ;  2
     beq +                                   ;  2 (in this loop)
     jsr inc_vic_control_y_zone              ; 22 + 6 (jsr)
-
+                                            ;--> 32
 .sprite_rows_fld_wait
     +wait_loop 44 - 32 - 2 - 3
 
@@ -206,7 +204,7 @@ SOFT_Y = *+1
     cpx #0                                  ;  2
     beq +                                   ;  2 (in this loop)
     jsr inc_vic_control_y_zone              ; 22 + 6 (jsr)
-
+                                            ;--> 32
 .sprite_rows_crunch_wait
     +wait_loop 44 - 32 - 2 - 3
 
@@ -242,7 +240,7 @@ SOFT_Y = *+1
     ; generate bad line
     dec VIC_CONTROL_Y                       ;6
 
-    ; 6 + 4/5 + 2 + 2/3 + 3 + 0/38 + 6 = 23-25/63
+    ; 6 + 5 + 2 + 2/3 + 3 + 0/38 + 6 = 24/63
 
 ;-------------------------------------------------------------------------------
 ; prepare soft scroll
