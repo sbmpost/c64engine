@@ -63,6 +63,23 @@ LOADED          = $36
 SPR_I           = $40; - $57
 SPR_Y           = $58; - $6f
 
+;------------exomizer--------------
+exod_zp_len_lo  = $9e
+exod_zp_len_hi  = $9f
+
+exod_zp_src_lo  = $ae
+exod_zp_src_hi  = exod_zp_src_lo + 1
+
+exod_zp_bits_hi = $a7
+;!if DONT_REUSE_OFFSET = 0 {
+exod_zp_ro_state = $a8
+;}
+
+exod_zp_bitbuf  = $fd
+exod_zp_dest_lo = exod_zp_bitbuf + 1 ; dest addr lo
+exod_zp_dest_hi = exod_zp_bitbuf + 2 ; dest addr hi
+;----------------------------------
+
 ; zero page: $0000 - $00ff
 ; cpu stack: $0100 - $01ff
 DISK_LOADER     = $0200; ~ $0400
@@ -71,23 +88,27 @@ MEM_FOR_BASIC   = $0400; - $07ff
 ;----------------------------------1k
 
 SPR_DATA        = $080d; - $0883
-CODE_START      = $0885; - $1fff,  6k
-SONG_DATA       = $2000; - $2fff,  4k
-;---------------------------------12k
+CODE_START      = $0885; - $1fff,   6k
+EXOMIZER        = $1b00; 195c;
+SONG_DATA       = $2000; - $2fff,   4k
+;----------------------------------12k
 
 DISK_LOADER_SRC = $3000; ~ $3200
 DISK_INSTALLER  = $4000; ~ $5b00
-TILE_MAP        = $3000; - $8fff, 24k
-TILE_CLR        = $9000; - $95ff,  1.5k
-TILE_SCR        = $9600; - $9bff,  1.5k
-TILE_PIX        = $9c00; - $bfff,  9k
-;---------------------------------36k
+FREE_AREA       = $3000; - $37ff,   6k
+MAP1_CRUNCHED   = $4800; ~ $4bff,   3k
+MAP2_CRUNCHED   = $5400; ~ $5fff,   3k
+TILE_MAP        = $6000; - $8fff,  12k
+TILE_CLR        = $9000; - $95ff,   1.5k
+TILE_SCR        = $9600; - $9bff,   1.5k
+TILE_PIX        = $9c00; - $bfff,   9k
+;----------------------------------36k
 
 VIC_BANK        = $c000;
-HIRES           = $c000; - $dfff,  8k, 4k under I/O area
-SCREEN          = $e000; - $e3ff,  1k
-SPR_FR          = $e400; - $ffbf,  7k 111 sprite frames
-;---------------------------------16k
+HIRES           = $c000; - $dfff,   8k, 4k under I/O area
+SCREEN          = $e000; - $e3ff,   1k
+SPR_FR          = $e400; - $ffbf,   7k 111 sprite frames
+;----------------------------------16k
 
 SPR_FR_BASE     = (SPR_FR-VIC_BANK)/64
 SPR_PTR         = SCREEN+$0400-8

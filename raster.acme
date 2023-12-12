@@ -412,8 +412,6 @@ rotate
 ; we are finishing the last irq this frame
 ;-------------------------------------------------------------------------------
 
-;!source "krill/loader/build/loadersymbols-c64.inc"
-
 last_irq
     sta restore_regs + 1
     stx restore_regs + 3
@@ -427,36 +425,45 @@ last_irq
     lda #11
     sta VIC_BORDER
 }
+;!ifdef DEVELOP {
 ;    jsr COPY_TILES
+;} else {
+    lda R_MAP_POS_HI
+    cmp #$23
+    bne .clear_loaded
 
-lda R_MAP_POS_HI
-cmp #$23
-bne .clear_loaded
+    lda LOADED
+    bne .copy_tiles
+    ;inc VIC_BORDER
 
-lda LOADED
-bne .copy_tiles
-;inc VIC_BORDER
+    ;lda #$71
+    ;sta VIC_CONTROL_Y
 
-lda #$71
-sta VIC_CONTROL_Y
+;    ldx #<tile_map
+;    ldy #>tile_map
+;    jsr loadcompd
 
-ldx #<tile_map
-ldy #>tile_map
-jsr loadcompd
+;    lda #<MAP2_CRUNCHED_END
+    lda #$5F
+    sta crunched_address+1
+;    lda #>MAP2_CRUNCHED_END
+    lda #$5D
+    sta crunched_address+2
+    jsr exod_decrunch
 
-lda #1
-sta LOADED
-jmp .play_song
+    lda #1
+    sta LOADED
+    jmp .play_song
 
 .clear_loaded
-lda #0
-sta LOADED
+    lda #0
+    sta LOADED
 
 .copy_tiles
     jsr COPY_TILES
+;}
 .play_song
     jsr PLAY_SONG
-
 !ifdef DEBUG {
     lda #0
     sta VIC_BORDER

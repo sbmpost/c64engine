@@ -3,5 +3,8 @@
 *.l
 *.prg
 *.tc
+*.obj
 config.default
 krill
+tiles
+rle
