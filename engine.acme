@@ -17,7 +17,7 @@
     CONTROL_Y_INVALID   = %00111000 ; 25 rows
 } else {
     CONTROL_X           = %00010000 ; multi color
-    CONTROL_Y_INVALID   = %01111000 ; invalid mode
+    CONTROL_Y_INVALID   = %01110000 ; invalid mode
 }
 
 CONTROL_Y_MASK      = %10111111 ; bitmap mode
@@ -25,15 +25,15 @@ LINE_0              = FIRST_BADLINE-3
 SCROLL_SPEED        = 2 ; supported are 1, 2 (8 directions) and 4 (4 directions)
 TILE_COLS           = 3 ; 40 - 1 / 3 = whole number = 13
 TILE_ROWS           = 2 ; 23 - 1 / 2 = whole number = 11
-SCR_COLS            = 40 ; horizontal screen chars in memory. the screen is in 39x25 mode
-SCR_ROWS            = 25 ; vertical screen chars in memory. the screen is in 39x25 mode
+SCR_COLS            = 40 ; horizontal screen chars in memory. the screen is in 39x24 mode
+SCR_ROWS            = 25 ; vertical screen chars in memory. the screen is in 39x24 mode
 MAP_WIDTH           = 256 ; assumed by the code, no other widths supported at the moment
 MAP_HEIGHT          = 96 ; not really used in the code, but good to know nonetheless
 SPRITES             = 24 ; 0 or at least 4 as this number includes the sprites in the crunch area
-SPRITES_TOP_Y       = $33 ; sprite position in fld/crunch area, this value should not be changed
+SPRITES_TOP_Y       = $3c;$33 ; sprite position in fld/crunch area, somewhere between $37 and $3c
 SPRITES_MAX_Y       = $e5 ; the lower, the more off-screen raster time we have to do other things
 TILES               = 185 ; TODO: calculate this with pixels.bin size / 8 / TILE_COLS / TILE_ROWS
-COPY_ROW_FRAMES     = 2; 1 ; use 1 frame to copy all rows, vertically
+COPY_ROW_FRAMES     = 2 ; use 2 frames to copy all rows, vertically
 !if SCROLL_SPEED = 1 {
 COPY_COL_FRAMES     = 4 ; use 4 frames to copy all cols, horizontally
 } else {
