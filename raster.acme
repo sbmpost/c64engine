@@ -39,7 +39,7 @@ IRQ !zone {
     lda VIC_RASTER                          ;  4
     cmp #LINE_0                             ;  2
     beq +                                   ;  3
-    jam
+    jmp retry_raster
 +                                           ;--> 29
     ; ack interrupt
     inc VIC_IRQ_STATUS                      ;  6
@@ -160,11 +160,9 @@ SOFT_Y = *+1
     bcs .sprite_rows_fld_wait               ;  2/3
     +wait_loop 63 - 32 - 2 - 3 - 4 - 2 - 2
 }                                           ;--> 32
-
     dex                                     ;  2
     jmp .fld_loop                           ;  3
 +
-
     ldx HARD_Y
 
 .crunch_loop
@@ -180,7 +178,6 @@ SOFT_Y = *+1
     bcs .sprite_rows_crunch_wait            ;  2/3
     +wait_loop 63 - 32 - 2 - 3 - 4 - 2 - 2
 }                                           ;--> 32
-
     dex                                     ;  2
     jmp .crunch_loop                        ;  3
 +
@@ -193,11 +190,9 @@ SOFT_Y = *+1
                                             ;--> 32
 .sprite_rows_fld_wait
     +wait_loop 44 - 32 - 2 - 3
-
     dex                                     ;  2
     jmp .sprite_rows_fld_loop               ;  3
 +
-
     ldx HARD_Y
 
 .sprite_rows_crunch_loop
@@ -207,7 +202,6 @@ SOFT_Y = *+1
                                             ;--> 32
 .sprite_rows_crunch_wait
     +wait_loop 44 - 32 - 2 - 3
-
     dex                                     ;  2
     jmp .sprite_rows_crunch_loop            ;  3
 +
@@ -218,11 +212,14 @@ SOFT_Y = *+1
 ;   VSP
 ;-------------------------------------------------------------------------------
     ; make VSP line not a bad line
+!if SPRITES != 0 {
+    +wait 17
+}
     inc VIC_CONTROL_Y                       ;6
 !if SPRITES = 0 {
     +wait 5                                 ;5
 } else {
-    +wait 4                                 ;4
+    +wait 6
 }
     sec                                     ;2
     ; introduce an extra cycle if 39 - HARD_X is odd
@@ -258,6 +255,7 @@ SOFT_Y = *+1
 ;-------------------------------------------------------------------------------
 
     ; todo
+    nop ; needed for top pixel line not to disappear
 
 ;-------------------------------------------------------------------------------
 ; issue soft scroll
@@ -265,7 +263,7 @@ SOFT_Y = *+1
 
     pla
     ; wait till end of AGSP region
-    ldy #FIRST_BADLINE+SCR_ROWS+8+1
+    ldy #FIRST_BADLINE+SCR_ROWS+8
 -
     cpy VIC_RASTER
     bne -
@@ -311,7 +309,8 @@ rotate
             jam
 +
 }
-            ldy #$f0+2
+;            ldy #$f0+2
+            ldy #$e5+2
             sty VIC_RASTER
             +set16 last_irq, VECTOR_IRQ
             jmp out
@@ -567,6 +566,7 @@ last_irq
 +
 }
 
+retry_raster
     +set_raster_line_8 LINE_0
     +set16 IRQ, VECTOR_IRQ
 
