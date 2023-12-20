@@ -13,7 +13,11 @@ JOYSTICK !zone {
     bcs .right
     dec CUR_SPR
     bpl .right
+!if SPRITES = 0 {
+    lda #0
+} else {
     lda #SPRITES-1
+}
     sta CUR_SPR
 
 .right
@@ -73,5 +77,8 @@ JOYSTICK !zone {
     rts
 }
 
-CUR_SPR
-    !by SPRITES-1
+!if SPRITES = 0 {
+CUR_SPR !by 0
+} else {
+CUR_SPR !by SPRITES-1
+}

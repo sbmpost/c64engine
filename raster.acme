@@ -117,7 +117,7 @@ SOFT_X = *+1
     lda CTRL_Y_INVALID                      ;  3
 }
     sta VIC_CONTROL_Y                       ;  4
-                                            ;-->  7
+                                            ;-->  6/7
 
     lda #SCR_ROWS                           ;  2
     sec                                     ;  2
@@ -136,10 +136,10 @@ SOFT_Y = *+1
     ora #CONTROL_Y_INVALID                  ;  2
     ; spill pre-computed value
     pha                                     ;  3
-                                            ;--> 14
+                                            ;--> 13
 
 !if SPRITES = 0 {
-    +wait_loop 63 - 3 - 6 - 8 - 13 - 20 - 4
+    +wait_loop 9
 }
 
 ;-------------------------------------------------------------------------------
