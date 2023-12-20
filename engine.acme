@@ -211,6 +211,7 @@ SPR_F
     stx C_PIX_POS_HI
     stx R_PIX_POS_LO
     stx R_PIX_POS_HI
+    stx MAP_NR
     ;----------------------------------
 
 ;-------------------------------------------------------------------------------
@@ -286,14 +287,6 @@ tile_pix
     lda #$52
     sta crunched_address+2
     jsr exod_decrunch
-
-;;    lda #<MAP2_CRUNCHED_END
-;    lda #$5F
-;    sta crunched_address+1
-;;    lda #>MAP2_CRUNCHED_END
-;    lda #$5D
-;    sta crunched_address+2
-;    jsr exod_decrunch
 
     jmp .init
 
