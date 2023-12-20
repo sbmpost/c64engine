@@ -30,26 +30,51 @@ IRQ !zone {
 ;   LINE_0
 ;-------------------------------------------------------------------------------
 
-    ; irq event                             ;  38-45
+    ; irq event                             ;  7
+    ; last instruction                      ;  1 (min)
+    sta restore_regs + 1                    ;  4
+    stx restore_regs + 3                    ;  4
+    sty restore_regs + 5                    ;  4
 
     lda VIC_RASTER                          ;  4
     cmp #LINE_0                             ;  2
     beq +                                   ;  3
     inc VIC_BORDER
     jmp retry_raster
-+
-    +set16 .irq_line_0_plus_2, VECTOR_IRQ   ; 12
-                                            ;--> 59-66
++                                           ;--> 29
+    ; ack interrupt
+    inc VIC_IRQ_STATUS                      ;  6
+
+    inc VIC_RASTER                          ;  6
+    +set16 .irq_line_0_plus_1, VECTOR_IRQ   ; 12
+                                            ;--> 24
+    ; save stack state
+    tsx                                     ;  2
+    ; begin raster stabilization
+    cli                                     ;  2
+                                            ;--> 4
+
+    ; somewhere here the next interrupt will hit
+    +wait_even 63 - 29 - 24 - 4
+
+;-------------------------------------------------------------------------------
+;   LINE_0 + 1
+;-------------------------------------------------------------------------------
+.irq_line_0_plus_1
+    ; irq event                             ;  7
+    ; last instruction                      ;1-2 (because of the nop field above)
+    ; restore stack state
+    txs                                     ;  2
+                                            ;--> 10-11
 
     ; calculate the number of nops to skip in VSP
     lda #SCR_COLS-1                         ;  2
     sec                                     ;  2
-; LINE_1                                    ;--> >= 63
 HARD_X = *+1
     sbc #0                                  ;  2
     lsr                                     ;  2
     sta .self_modifying_branch__nops + 1    ;  4
-                                            ;--> 8
+                                            ;--> 12
 
     ; introduce an extra cycle in VSP if carry is set
     bcs .set_bcc                            ;2-3
@@ -70,38 +95,12 @@ SOFT_X = *+1
     adc #0                                  ;  2
     sta VIC_CONTROL_X                       ;  4
                                             ;--> 10
-
-    inc VIC_RASTER                          ;  6
-    inc VIC_IRQ_STATUS                      ;  6
-
-    ; save stack state
-    tsx                                     ;  2
-    stx .restore_stack+1
-
-    ; begin raster stabilization
-    cli                                     ;  2
-                                            ;--> 14
-    +wait_even 63-45
-
-;-------------------------------------------------------------------------------
-;   LINE_0 + 2
-;-------------------------------------------------------------------------------
-.irq_line_0_plus_2
-    ; irq event                             ;  38
-    ; last instruction                      ;0-1 (because of the nop field above)
-
-.restore_stack
-    ldx #$00                                ;  2
-    txs                                     ;  2
-                                            ;--> 42-43
-
-    +wait 15                                ; 4 + 15 + 6 = 25, 25 + 38/39: 63/64
+    +wait 63-11-12-11-10-6
 
     ; wobble check
-    lda #LINE_0 + 3                         ;  2
+    lda #LINE_0 + 2                         ;  2
     cmp VIC_RASTER                          ;  4
                                             ;--> 6
-
     +bne                                    ;3-2
     ; -> the raster interrupt is stable now with 3 cycles off
 
@@ -340,6 +339,9 @@ rotate
             jmp out
 
 .next_irq
+            sta restore_regs + 1
+            stx restore_regs + 3
+            sty restore_regs + 5
 ;            !ifdef DEBUG {
 ;                inc VIC_BORDER
 ;            }
@@ -409,6 +411,9 @@ rotate
 ;-------------------------------------------------------------------------------
 
 last_irq
+    sta restore_regs + 1
+    stx restore_regs + 3
+    sty restore_regs + 5
 !ifdef DEBUG {
     lda #10
     sta VIC_BORDER
@@ -574,11 +579,9 @@ out
     inc VIC_IRQ_STATUS
 
 restore_regs
-    pla
-    tay
-    pla
-    tax
-    pla
+    lda #0
+    ldx #0
+    ldy #0
     rti
 
 EMPTY_INTERRUPT = *-1

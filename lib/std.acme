@@ -247,8 +247,7 @@
 
 VECTOR_NMI   = $fffa
 VECTOR_RESET = $fffc
-;VECTOR_IRQ   = $fffe
-VECTOR_IRQ   = $0314
+VECTOR_IRQ   = $fffe
 
 !macro save_regs .label {
     !set .offset = 3
@@ -347,8 +346,7 @@ VECTOR_IRQ   = $0314
 
 RAM_ROM_SELECTION   = $01
 RAM_ROM_DEFAULT     = %00110111
-;ALL_RAM_WITH_IO     = %00110101
-ALL_RAM_WITH_IO     = %00110110
+ALL_RAM_WITH_IO     = %00110101
 ALL_RAM             = %00110100
 
 !macro set .value, .addr {
