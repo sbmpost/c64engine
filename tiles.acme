@@ -74,7 +74,7 @@ copy_tile_char5 !zone { +copy_tile_char 5 }
     adc #(8*.cols % 256) ; + 64
     sta PIX_POS_LO_T
 !if .cols = 1 {
-    bcc+
+    bcc +
 }
     lda PIX_POS_HI_T
     adc #(8*.cols / 256) ; + 256
@@ -260,7 +260,7 @@ copy_tile_char5 !zone { +copy_tile_char 5 }
         !if .char = 3 { jsr copy_tile_char3 }
         !if .char = 4 { jsr copy_tile_char4 }
         !if .char = 5 { jsr copy_tile_char5 }
-        !if .char != 5 { bne .iterate_pointers }
+        !if .char != 5 { jmp .iterate_pointers }
 +
     }
 

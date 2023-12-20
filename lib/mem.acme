@@ -95,7 +95,7 @@ SONG_DATA       = $2000; - $2fff,   4k
 
 DISK_LOADER_SRC = $3000; ~ $3200
 DISK_INSTALLER  = $4000; ~ $5b00
-FREE_AREA       = $3000; - $37ff,   6k
+FREE_AREA       = $3000; - $47ff,   6k
 MAP1_CRUNCHED   = $4800; ~ $4bff,   3k
 MAP2_CRUNCHED   = $5400; ~ $5fff,   3k
 TILE_MAP        = $6000; - $8fff,  12k

@@ -149,7 +149,6 @@ SPR_F
     +set %10101010, VIC_SPR_MULTI
     +set BROWN, VIC_SPR_COLOR_01
     +set GREY,  VIC_SPR_COLOR_11
-    +set $ff, VIC_SPR_ENABLE
 
 ;-------------------------------------------------------------------------------
 ;   setup test stuff
