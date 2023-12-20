@@ -96,6 +96,23 @@ DEC_HARD_Y !zone {
 +
 }
 
+!macro wrap_sub2 .lo, .hi, .sub, .ora {
+    sec
+
+    lda .lo
+    sbc #(.sub % 256)
+    sta .lo
+;!if .sub < 256 {
+;    bcs +
+;}
+    lda .hi
+    sbc #(.sub / 256)
+    ora #.ora ; assumes 2^x = .and
+    sta .hi
+;+
+;clc
+}
+
 SCROLL_U !zone {
 ;    lda VIC_SPR_0_Y
 ;    cmp #73
@@ -240,6 +257,8 @@ SCROLL_L !zone {
     sta TILE_COL
     +wrap_sub C_SCR_POS_LO, C_SCR_POS_HI, 1, 4
     +wrap_sub R_SCR_POS_LO, R_SCR_POS_HI, 1, 4
+;    +wrap_sub2 C_PIX_POS_LO, C_PIX_POS_HI, 8, $e0; 8*4
+;    +wrap_sub2 R_PIX_POS_LO, R_PIX_POS_HI, 8, $e0; 8*4
     +wrap_sub C_PIX_POS_LO, C_PIX_POS_HI, 8, 8*4
     +wrap_sub R_PIX_POS_LO, R_PIX_POS_HI, 8, 8*4
 
@@ -251,6 +270,7 @@ SCROLL_L !zone {
     sbc #(SCROLL_COLS-1)/TILE_COLS
     sta R_MAP_POS_LO
     +wrap_sub R_SCR_POS_LO, R_SCR_POS_HI, SCROLL_COLS-1, 4
+;    +wrap_sub2 R_PIX_POS_LO, R_PIX_POS_HI, 8*(SCROLL_COLS-1), $e0; 8*4
     +wrap_sub R_PIX_POS_LO, R_PIX_POS_HI, 8*(SCROLL_COLS-1), 8*4
 
     lda #0

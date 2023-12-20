@@ -6,9 +6,6 @@
     lda TILE_SCR+(.char*TILES), x
     sta (SCR_POS_LO_T), y
 
-    lda #ALL_RAM
-    sta RAM_ROM_SELECTION
-
     !for .row, 0, 7 {
         lda TILE_PIX+(.char*8*TILES)+(.row*TILES), x
         sta (PIX_POS_LO_T), y
@@ -16,9 +13,6 @@
             iny
         }
     }
-
-    lda #ALL_RAM_WITH_IO
-    sta RAM_ROM_SELECTION
 
     rts
 }
@@ -74,27 +68,30 @@ copy_tile_char5 !zone { +copy_tile_char 5 }
     adc #(8*.cols % 256) ; + 64
     sta PIX_POS_LO_T
 !if .cols = 1 {
-    bcc+
+    bcc .iterate_colors
 }
     lda PIX_POS_HI_T
     adc #(8*.cols / 256) ; + 256
-    and #%11011111 ; modulo 8192 (but keep upper bits)
-    sta PIX_POS_HI_T ; next pixel position to start from
+    bcc +
+    clc
+    ora #>HIRES
 +
-    ; color pointers
+    sta PIX_POS_HI_T ; next pixel position to start from
+
+.iterate_colors
     lda SCR_POS_LO_T
     adc #.cols
     sta SCR_POS_LO_T ; next screen position to start from
     sta CLR_POS_LO_T
     bcc +
 
-    lda CLR_POS_HI_T
+    lda SCR_POS_HI_T
     adc #0
     and #%11111011 ; modulo 1024 (but keep upper bits)
-    sta CLR_POS_HI_T
-
-    adc #%00001000
     sta SCR_POS_HI_T
+
+    adc #%00011000
+    sta CLR_POS_HI_T
 +
 }
 
@@ -169,7 +166,8 @@ copy_tile_char5 !zone { +copy_tile_char 5 }
     sta .map_pos_hi_t
 
     lda .pix_pos_hi
-    adc #>HIRES
+    ora #>HIRES
+;    adc #>HIRES
     sta .pix_pos_hi_t
 
     lda .pix_pos_lo
@@ -260,7 +258,7 @@ copy_tile_char5 !zone { +copy_tile_char 5 }
         !if .char = 3 { jsr copy_tile_char3 }
         !if .char = 4 { jsr copy_tile_char4 }
         !if .char = 5 { jsr copy_tile_char5 }
-        !if .char != 5 { bne .iterate_pointers }
+        !if .char != 5 { jmp .iterate_pointers }
 +
     }
 
