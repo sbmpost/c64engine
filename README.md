@@ -38,29 +38,9 @@ Use joystick in port 2 to run the demo.
 
     Multiplixing 24 x 2 sprites. This means 24 virtual multi-color sprites where each sprite is overlayed with a single-color sprite for more colors and better resolution.
 
-* Tile-Copying
+* Tile-Data
 
-    The binary format of the files is as follows:
-
-    * `map.bin`: `map width` * `map height` bytes (here 256 * 96).
-
-        Each byte is a tile index into the tile data: pixels, screen, colors
-
-    * `pixels.bin`: `tile width` * `tile height` * 8 bytes per tile (here 3 * 2 * 8).
-
-        Each bit pair in a byte is a color number: 0-3 (multicolor)
-
-    * `screen.bin`: `tile width` * `tile height` bytes per tile.
-
-        For each byte, the upper 4 bits are color 1 and the lower 4 bits are color 2
-
-    * `colors.bin`: `tile width` * `tile height` bytes per tile.
-
-        For each byte, the upper 4 bits are ignored and the lower 4 bits are color 3
-
-    Color `%00` (the shared background color) is black, but this can of course be changed to any of the 16 colors.
-    If you are generating your own tile data, it is adviced to give priority to color number `%11`.
-    In this way it is possible to reduce the problem of the sprite pointers overwriting the screen colors if certain tiles use only color `%00` & color `%11`.
+    Use provided tooling for generating tile data, see README in tiles folder
 
 * Map-loader (credits for the disk loader go to Krill)
 

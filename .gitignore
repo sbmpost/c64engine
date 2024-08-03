@@ -6,5 +6,5 @@
 *.obj
 config.default
 krill
-tiles
 rle
+tmp
