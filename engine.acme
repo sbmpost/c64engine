@@ -142,8 +142,8 @@ SPR_F
     lda #0; upper 6 bits must always be 0
     sta CIA2_DATA_PORT_A
 
-    ; select screen bank 8, hires-bank 0
-    lda #%10000000
+    ; select screen bank 0, hires-bank 1
+    lda #%00001000
     sta VIC_ADDR_SELECT
 
     +set %10101010, VIC_SPR_MULTI

@@ -106,9 +106,9 @@ TILE_PIX        = $9c00; - $bfff,   9k
 ;----------------------------------36k
 
 VIC_BANK        = $c000;
-HIRES           = $c000; - $dfff,   8k, 4k under I/O area
-SCREEN          = $e000; - $e3ff,   1k
-SPR_FR          = $e400; - $ffbf,   7k 111 sprite frames
+SCREEN          = $c000; - $c3ff,   1k
+SPR_FR          = $c400; - $dfff,   7k 112 sprite frames, partially under I/O area
+HIRES           = $e000; - $ffff,   8k
 ;----------------------------------16k
 
 SPR_FR_BASE     = (SPR_FR-VIC_BANK)/64
