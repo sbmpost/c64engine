@@ -236,11 +236,14 @@ SPR_F
     jmp -
 
 !convtab pet {
-tile_map1
-    !tx "map1"
-    !by 0
-tile_map2
-    !tx "map2"
+;tile_map1
+;    !tx "map1"
+;    !by 0
+;tile_map2
+;    !tx "map2"
+;    !by 0
+tile_map
+    !tx "map"
     !by 0
 tile_clr
     !tx "colors"
@@ -254,15 +257,20 @@ tile_pix
 }
 
 .load
-    ldx #<tile_map1
-    ldy #>tile_map1
-    jsr loadraw
+    ldx #<tile_map
+    ldy #>tile_map
+    jsr loadcompd
     bcs .load_error
 
-    ldx #<tile_map2
-    ldy #>tile_map2
-    jsr loadraw
-    bcs .load_error
+;    ldx #<tile_map1
+;    ldy #>tile_map1
+;    jsr loadraw
+;    bcs .load_error
+
+;    ldx #<tile_map2
+;    ldy #>tile_map2
+;    jsr loadraw
+;    bcs .load_error
 
     ldx #<tile_clr
     ldy #>tile_clr
@@ -280,27 +288,27 @@ tile_pix
     bcs .load_error
 }
 
-;    lda #<MAP1_CRUNCHED_END
-    lda #$D9
-    sta crunched_address+1
-;    lda #>MAP1_CRUNCHED_END
-    lda #$52
-    sta crunched_address+2
-    jsr exod_decrunch
+;;    lda #<MAP1_CRUNCHED_END
+;    lda #$D9
+;    sta crunched_address+1
+;;    lda #>MAP1_CRUNCHED_END
+;    lda #$52
+;    sta crunched_address+2
+;    jsr exod_decrunch
 
-    jmp .init
+;    jmp .init
 
-exod_get_crunched_byte
-    lda crunched_address+1
-    bne +
-    dec crunched_address+2
-+
-    dec crunched_address+1
-crunched_address
-    lda $ffff
-    rts
+;exod_get_crunched_byte
+;    lda crunched_address+1
+;    bne +
+;    dec crunched_address+2
+;+
+;    dec crunched_address+1
+;crunched_address
+;    lda $ffff
+;    rts
 
-.init
+;.init
     jsr init_screen
 
 ;-------------------------------------------------------------------------------
@@ -354,8 +362,8 @@ init_screen !zone {
     !warn "code ends on: ", *-1
 }
 
-*=EXOMIZER
-!source "exodecrunch.asm"
+;*=EXOMIZER
+;!source "exodecrunch.asm"
 
 *=SONG_DATA
 !bin "snd/transylvanian.bin"
@@ -369,13 +377,16 @@ init_screen !zone {
 }
 
 !ifdef DEVELOP {
-*=MAP1_CRUNCHED
-!bin "map1.exo",,2
-MAP1_CRUNCHED_END=*
+;*=MAP1_CRUNCHED
+;!bin "map1.exo",,2
+;MAP1_CRUNCHED_END=*
 
-*=MAP2_CRUNCHED
-!bin "map2.exo",,2
-MAP2_CRUNCHED_END=*
+;*=MAP2_CRUNCHED
+;!bin "map2.exo",,2
+;MAP2_CRUNCHED_END=*
+
+*=TILE_MAP
+!bin "map.bin"
 
 *=TILE_CLR
 !bin "colors.bin"

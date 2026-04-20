@@ -423,53 +423,53 @@ last_irq
     lda #11
     sta VIC_BORDER
 }
-    lda R_MAP_POS_HI
-    cmp #$24
-    bne .clear_loaded
-    lda LOADED
-    bne .copy_tiles
+;    lda R_MAP_POS_HI
+;    cmp #$24
+;    bne .clear_loaded
+;    lda LOADED
+;    bne .copy_tiles
 
-    lda MAP_NR
-    eor #1
-    sta MAP_NR
-    bne .map2
-;    lda #<MAP1_CRUNCHED_END
-    lda #$D9
-    sta crunched_address+1
-;    lda #>MAP1_CRUNCHED_END
-    lda #$52
-    sta crunched_address+2
-    jmp +
+;    lda MAP_NR
+;    eor #1
+;    sta MAP_NR
+;    bne .map2
+;;    lda #<MAP1_CRUNCHED_END
+;    lda #$D9
+;    sta crunched_address+1
+;;    lda #>MAP1_CRUNCHED_END
+;    lda #$52
+;    sta crunched_address+2
+;    jmp +
 
-.map2
-;    lda #<MAP2_CRUNCHED_END
-    lda #$5F
-    sta crunched_address+1
-;    lda #>MAP2_CRUNCHED_END
-    lda #$5D
-    sta crunched_address+2
-+
+;.map2
+;;    lda #<MAP2_CRUNCHED_END
+;    lda #$5F
+;    sta crunched_address+1
+;;    lda #>MAP2_CRUNCHED_END
+;    lda #$5D
+;    sta crunched_address+2
+;+
 
-.decrunch_and_init
-    jsr exod_decrunch
+;.decrunch_and_init
+;    jsr exod_decrunch
 
-    ; todo: reposition
-    clc
-    lda R_MAP_POS_LO
-    adc #(SCROLL_COLS-1)/TILE_COLS
-    sta R_MAP_POS_LO
-    jsr init_screen
+;    ; todo: reposition
+;    clc
+;    lda R_MAP_POS_LO
+;    adc #(SCROLL_COLS-1)/TILE_COLS
+;    sta R_MAP_POS_LO
+;    jsr init_screen
 
-    lda #1
-    sta LOADED
-    jmp .play_song
+;    lda #1
+;    sta LOADED
+;    jmp .play_song
 
-.clear_loaded
-    lda #0
-    sta LOADED
-.copy_tiles
+;.clear_loaded
+;    lda #0
+;    sta LOADED
+;.copy_tiles
     jsr COPY_TILES
-.play_song
+;.play_song
     jsr PLAY_SONG
 !ifdef DEBUG {
     lda #0
