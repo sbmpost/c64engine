@@ -51,8 +51,7 @@ copy_tile_char5 !zone { +copy_tile_char 5 }
 } else {
     !if TILE_ROWS = 2 {
         lda .tile_char
-        adc #1
-        and #1
+        eor #TILE_COLS
         sta .tile_char
         bne +
     }
@@ -153,6 +152,9 @@ copy_tile_char5 !zone { +copy_tile_char 5 }
     sta .tile_col
 
     lda TILE_ROW
+    beq +
+    lda #TILE_COLS ; a = TILE_COLS * tile_row (TILE_ROWS = 2)
++
     sta .tile_row
 
     lda .map_pos_lo
@@ -237,9 +239,6 @@ copy_tile_char5 !zone { +copy_tile_char 5 }
 
     ; pixel pointer
     lda .tile_row_t
-    beq +
-    lda #TILE_COLS ; a = TILE_COLS * tile_row (TILE_ROWS = 2)
-+
     adc .tile_col_t
 
 ;    jsr select_and_copy_tile_char
