@@ -58,6 +58,9 @@ JOYSTICK !zone {
     cpy #SPRITES_TOP_Y
     beq .up
     inc SPR_Y, x
+    pha
+    jsr sort_sprite_down
+    pla
 
 .up
     asl
@@ -72,6 +75,9 @@ JOYSTICK !zone {
     cpy #SPRITES_TOP_Y
     beq .exit
     dec SPR_Y, x
+    pha
+    jsr sort_sprite_up
+    pla
 
 .exit
     rts
@@ -81,4 +87,62 @@ JOYSTICK !zone {
 CUR_SPR !by 0
 } else {
 CUR_SPR !by SPRITES-1
+}
+
+sort_sprite_down !zone {
+    ; X = virtual sprite index whose Y just increased
+    ; bubble forward in SPR_I until sorted
+    txa
+    ldy #0
+-   cmp SPR_I, y
+    beq .check
+    iny
+    bne -
+.check
+    cpy #SPRITES-1
+    beq .done
+.loop
+    ldx SPR_I, y
+    lda SPR_Y, x
+    ldx SPR_I+1, y
+    cmp SPR_Y, x
+    bcc .done
+    beq .done
+    ; swap SPR_I[y] and SPR_I[y+1]
+    lda SPR_I, y
+    stx SPR_I, y
+    sta SPR_I+1, y
+    iny
+    cpy #SPRITES
+    bne .loop
+.done
+    rts
+}
+
+sort_sprite_up !zone {
+    ; X = virtual sprite index whose Y just decreased
+    ; bubble backward in SPR_I until sorted
+    txa
+    ldy #0
+-   cmp SPR_I, y
+    beq .check
+    iny
+    bne -
+.check
+    cpy #0
+    beq .done
+.loop
+    ldx SPR_I, y
+    lda SPR_Y, x
+    ldx SPR_I-1, y
+    cmp SPR_Y, x
+    bcs .done
+    ; swap SPR_I[y] and SPR_I[y-1]
+    lda SPR_I, y
+    stx SPR_I, y
+    sta SPR_I-1, y
+    dey
+    bne .loop
+.done
+    rts
 }

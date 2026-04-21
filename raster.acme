@@ -519,48 +519,11 @@ last_irq
     stx VIC_SPR_X_MSB
 }
 
-;-------------------------------------------------------------------------------
-; sort sprites
-;-------------------------------------------------------------------------------
-
-    !ifdef DEBUG {
-        ldx #2
-        stx VIC_BORDER
-;        inc VIC_BORDER
-    }
-
-    !if SPRITES > 1 {
-        !for .i, 0, SPRITES-2 {
-            ldy SPR_I + .i + 1
-            !if .i % 2 = 0 {
-                !set .back_0 = *
-            } else {
-                !set .back_1 = *
-            }
-            ldx SPR_I + .i
-            lda SPR_Y, y            ; A: r-elem
-            cmp SPR_Y, x            ; M: l-elem
-            ; swap if A < M
-            ; skip if A >= M
-            bcs +
-            stx SPR_I + .i + 1
-            sty SPR_I + .i
-            !if .i != 0 {
-                !if .i % 2 = 0 {
-                    bcc .back_1   ; always true
-                } else {
-                    bcc .back_0   ; always true
-                }
-            }
-+
-        }
-    }
-
-    !ifdef DEBUG {
-        ldx #1
-        stx VIC_BORDER
-;        dec VIC_BORDER
-    }
+!ifdef DEBUG {
+    ldx #1
+    stx VIC_BORDER
+;    inc VIC_BORDER
+}
 
 ;!ifdef DEVELOP {
 ;    lda $d011
