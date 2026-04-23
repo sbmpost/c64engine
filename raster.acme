@@ -423,53 +423,148 @@ last_irq
     lda #11
     sta VIC_BORDER
 }
-;    lda R_MAP_POS_HI
-;    cmp #$24
-;    bne .clear_loaded
-;    lda LOADED
-;    bne .copy_tiles
+    ; --- camera lock: check if sprite reached screen edge ---
+    lda CAMERA_LOCK
+    bne +
+    jmp .check_boundaries
++
+    ldx #PLAYER_SPR
+    lda SPR_Y, x
+    cmp #SPRITES_MAX_Y
+    beq .edge_down
+    cmp #SPRITES_TOP_Y
+    beq .edge_up
+    jmp .copy_tiles
 
-;    lda MAP_NR
-;    eor #1
-;    sta MAP_NR
-;    bne .map2
-;;    lda #<MAP1_CRUNCHED_END
-;    lda #$D9
-;    sta crunched_address+1
-;;    lda #>MAP1_CRUNCHED_END
-;    lda #$52
-;    sta crunched_address+2
-;    jmp +
+.edge_down
+    lda MAP_NR
+    beq +
+    jmp .copy_tiles         ; MAP_NR == 1: bottom of map, no load
++
 
-;.map2
-;;    lda #<MAP2_CRUNCHED_END
-;    lda #$5F
-;    sta crunched_address+1
-;;    lda #>MAP2_CRUNCHED_END
-;    lda #$5D
-;    sta crunched_address+2
-;+
+    lda #1
+    sta MAP_NR
+    lda #<MAP2_CRUNCHED_END
+    sta crunched_address+1
+    lda #>MAP2_CRUNCHED_END
+    sta crunched_address+2
+    jsr exod_decrunch
 
-;.decrunch_and_init
-;    jsr exod_decrunch
+    lda #$ff;
+    sta R_MAP_POS_HI
+    lda #(SCROLL_ROWS-1)/TILE_ROWS - 1
+    sta C_MAP_POS_HI
 
-;    ; todo: reposition
-;    clc
-;    lda R_MAP_POS_LO
-;    adc #(SCROLL_COLS-1)/TILE_COLS
-;    sta R_MAP_POS_LO
-;    jsr init_screen
+    lda #1
+    sta TILE_ROW
 
-;    lda #1
-;    sta LOADED
-;    jmp .play_song
+    lda SCROLL_U_D
+    bne +
+    +wrap_add C_SCR_POS_LO, C_SCR_POS_HI, (SCROLL_ROWS-1)*SCROLL_COLS, 4
+    +wrap_add C_PIX_POS_LO, C_PIX_POS_HI, 8*(SCROLL_ROWS-1)*SCROLL_COLS, 8*4
 
-;.clear_loaded
-;    lda #0
-;    sta LOADED
-;.copy_tiles
+    lda #1
+    sta SCROLL_U_D
++
+
+    lda #SPRITES_TOP_Y + 1
+    sta SPR_Y + PLAYER_SPR
+    lda #2
+    sta CAMERA_LOCK
+    ldx #PLAYER_SPR
+    jsr sort_sprite_up
+    jmp .after_load
+
+.edge_up
+    lda MAP_NR
+    bne +
+    jmp .copy_tiles         ; MAP_NR == 0: top of map, no load
++
+
+    lda #0
+    sta MAP_NR
+    lda #<MAP1_CRUNCHED_END
+    sta crunched_address+1
+    lda #>MAP1_CRUNCHED_END
+    sta crunched_address+2
+    jsr exod_decrunch
+
+    lda #(MAP_HEIGHT/2 * TILE_ROWS - SCROLL_ROWS + 1) / TILE_ROWS
+    sta R_MAP_POS_HI
+    sta C_MAP_POS_HI
+
+;    lda #(MAP_HEIGHT/2 * TILE_ROWS - SCROLL_ROWS + 1) AND (TILE_ROWS - 1)
+    lda #0
+    sta TILE_ROW
+
+    lda SCROLL_U_D
+    beq +
+    +wrap_sub C_SCR_POS_LO, C_SCR_POS_HI, (SCROLL_ROWS-1)*SCROLL_COLS, 4
+    +wrap_sub C_PIX_POS_LO, C_PIX_POS_HI, 8*(SCROLL_ROWS-1)*SCROLL_COLS, 8*4
+    lda #0
+    sta SCROLL_U_D
++
+
+    lda #SPRITES_MAX_Y - 1
+    sta SPR_Y + PLAYER_SPR
+    lda #1
+    sta CAMERA_LOCK
+    ldx #PLAYER_SPR
+    jsr sort_sprite_down
+
+.after_load
+    lda SCROLL_L_R
+    beq +
+    sec
+    lda R_MAP_POS_LO
+    sbc #(SCROLL_COLS-1)/TILE_COLS
+    sta R_MAP_POS_LO
+    +wrap_sub R_SCR_POS_LO, R_SCR_POS_HI, SCROLL_COLS-1, 4
+    +wrap_sub R_PIX_POS_LO, R_PIX_POS_HI, 8*(SCROLL_COLS-1), 8*4
+    lda #0
+    sta SCROLL_L_R
++
+    jsr fill_screen
+    jmp .play_song
+
+.check_boundaries
+    ; --- detect boundary and set camera lock ---
+    lda SCROLL_U_D
+    beq .check_up_dir
+
+    ; scrolling down: lock based on char row (R_MAP_POS_HI*2+TILE_ROW)
+    lda R_MAP_POS_HI
+    asl
+    clc
+    adc TILE_ROW
+    cmp #MAP_HEIGHT/2 * TILE_ROWS - SCROLL_ROWS + 1
+    bcc +
+    cmp #MAP_HEIGHT/2 * TILE_ROWS + TILE_ROWS
+    bcs +
+    lda SOFT_Y
+    bne +
+    jmp .lock_down
++   jmp .copy_tiles
+
+.check_up_dir
+    ; scrolling up: lock if R wrapped past 0
+    lda R_MAP_POS_HI
+    bpl +
+    lda SOFT_Y
+    bne +
+    jmp .lock_up
++   jmp .copy_tiles
+
+.lock_down
+    lda #1
+    jmp +
+.lock_up
+    lda #2
++   sta CAMERA_LOCK
+
+.copy_tiles
     jsr COPY_TILES
-;.play_song
+.play_song
     jsr PLAY_SONG
 !ifdef DEBUG {
     lda #0

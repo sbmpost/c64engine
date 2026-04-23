@@ -32,6 +32,8 @@ MAP_HEIGHT          = 96 ; not really used in the code, but good to know nonethe
 SPRITES             = 24 ; 0 or at least 4 as this number includes the sprites in the crunch area
 SPRITES_TOP_Y       = $3c;$33 ; sprite position in fld/crunch area, somewhere between $37 and $3c
 SPRITES_MAX_Y       = $e5 ; the lower, the more off-screen raster time we have to do other things
+PLAYER_SPR          = 4 ; first sprite not in the crunch area
+CENTER_Y            = $99 ; midpoint of visible area ($52-$E0)
 TILES               = 185 ; TODO: calculate this with pixels.bin size / 8 / TILE_COLS / TILE_ROWS
 COPY_ROW_FRAMES     = 2 ; use 2 frames to copy all rows, vertically
 !if SCROLL_SPEED = 1 {
@@ -44,7 +46,7 @@ COPY_COL_FRAMES     = 2 ; use 2 frames to copy all cols, horizontally
 
 _spr_y
     !by SPRITES_TOP_Y, SPRITES_TOP_Y, SPRITES_TOP_Y, SPRITES_TOP_Y
-    !by $64, $66, $68, $6a, $84, $86, $88, $8a, $a4, $a6, $a8, $aa, $c0, $c2, $c4, $c6
+    !by CENTER_Y, $66, $68, $6a, $84, $86, $88, $8a, $a4, $a6, $a8, $aa, $c0, $c2, $c4, $c6
     !by SPRITES_MAX_Y, SPRITES_MAX_Y, SPRITES_MAX_Y, SPRITES_MAX_Y
 SPR_X
     !by $20, $40, $60, $80, $50, $60, $70, $80, $10, $20, $30, $40, $50, $60, $70, $80, $10, $20, $30, $40, $50, $60, $70, $80
@@ -193,12 +195,13 @@ SPR_F
 
 ;    ldx #<TILE_MAP
 ;    ldx #$80
-    ldx #$7b
+    ldx #$6e
     stx C_MAP_POS_LO
     stx R_MAP_POS_LO
 ;    ldx #>TILE_MAP
 ;    ldx #$40
-    ldx #$22
+
+    ldx #$25
     stx C_MAP_POS_HI
     stx R_MAP_POS_HI
 
@@ -212,6 +215,9 @@ SPR_F
     stx R_PIX_POS_LO
     stx R_PIX_POS_HI
     stx MAP_NR
+
+    ldx #1
+    stx CAMERA_LOCK
     ;----------------------------------
 
 ;-------------------------------------------------------------------------------
@@ -236,15 +242,15 @@ SPR_F
     jmp -
 
 !convtab pet {
-;tile_map1
-;    !tx "map1"
-;    !by 0
-;tile_map2
-;    !tx "map2"
-;    !by 0
-tile_map
-    !tx "map"
+tile_map1
+    !tx "map1"
     !by 0
+tile_map2
+    !tx "map2"
+    !by 0
+;tile_map
+;    !tx "map"
+;    !by 0
 tile_clr
     !tx "colors"
     !by 0
@@ -257,20 +263,15 @@ tile_pix
 }
 
 .load
-    ldx #<tile_map
-    ldy #>tile_map
-    jsr loadcompd
+    ldx #<tile_map1
+    ldy #>tile_map1
+    jsr loadraw
     bcs .load_error
 
-;    ldx #<tile_map1
-;    ldy #>tile_map1
-;    jsr loadraw
-;    bcs .load_error
-
-;    ldx #<tile_map2
-;    ldy #>tile_map2
-;    jsr loadraw
-;    bcs .load_error
+    ldx #<tile_map2
+    ldy #>tile_map2
+    jsr loadraw
+    bcs .load_error
 
     ldx #<tile_clr
     ldy #>tile_clr
@@ -288,28 +289,26 @@ tile_pix
     bcs .load_error
 }
 
-;;    lda #<MAP1_CRUNCHED_END
-;    lda #$D9
-;    sta crunched_address+1
-;;    lda #>MAP1_CRUNCHED_END
-;    lda #$52
-;    sta crunched_address+2
-;    jsr exod_decrunch
+    lda #<MAP1_CRUNCHED_END
+    sta crunched_address+1
+    lda #>MAP1_CRUNCHED_END
+    sta crunched_address+2
+    jsr exod_decrunch
 
-;    jmp .init
+    jmp .init
 
-;exod_get_crunched_byte
-;    lda crunched_address+1
-;    bne +
-;    dec crunched_address+2
-;+
-;    dec crunched_address+1
-;crunched_address
-;    lda $ffff
-;    rts
+exod_get_crunched_byte
+    lda crunched_address+1
+    bne +
+    dec crunched_address+2
++
+    dec crunched_address+1
+crunched_address
+    lda $ffff
+    rts
 
-;.init
-    jsr init_screen
+.init
+    jsr fill_screen
 
 ;-------------------------------------------------------------------------------
 ;   setup raster irq
@@ -340,21 +339,54 @@ tile_pix
 !source "raster.acme"
 !source "tiles.acme"
 
-init_screen !zone {
-    lda #(8*SCR_COLS/SCROLL_SPEED % 256)
-    sta INIT_SCREEN_LO
-    lda #1+(8*SCR_COLS/SCROLL_SPEED / 256)
-    sta INIT_SCREEN_HI
--
-    jsr SCROLL_L
-    jsr COPY_TILES
-    dec INIT_SCREEN_LO
-    bne -
-    lda #$ff
-    sta INIT_SCREEN_LO
-    dec INIT_SCREEN_HI
-    bne -
+fill_screen !zone {
+    lda TILE_COL
+    pha
+    lda R_MAP_POS_LO
+    pha
+    lda R_SCR_POS_LO
+    pha
+    lda R_SCR_POS_HI
+    pha
+    lda R_PIX_POS_LO
+    pha
+    lda R_PIX_POS_HI
+    pha
 
+    lda #SCR_COLS
+    sta INIT_SCREEN_LO
+
+.fill_loop
+    jsr copy_row_tiles1
+    jsr copy_row_tiles2
+
+    lda TILE_COL
+    clc
+    adc #1
+    cmp #TILE_COLS
+    bcc +
+    sbc #TILE_COLS
+    inc R_MAP_POS_LO
++   sta TILE_COL
+
+    +wrap_add R_SCR_POS_LO, R_SCR_POS_HI, 1, 4
+    +wrap_add R_PIX_POS_LO, R_PIX_POS_HI, 8, 8*4
+
+    dec INIT_SCREEN_LO
+    bne .fill_loop
+
+    pla
+    sta R_PIX_POS_HI
+    pla
+    sta R_PIX_POS_LO
+    pla
+    sta R_SCR_POS_HI
+    pla
+    sta R_SCR_POS_LO
+    pla
+    sta R_MAP_POS_LO
+    pla
+    sta TILE_COL
     rts
 }
 
@@ -362,8 +394,8 @@ init_screen !zone {
     !warn "code ends on: ", *-1
 }
 
-;*=EXOMIZER
-;!source "exodecrunch.asm"
+*=EXOMIZER
+!source "exodecrunch.asm"
 
 *=SONG_DATA
 !bin "snd/transylvanian.bin"
@@ -377,16 +409,13 @@ init_screen !zone {
 }
 
 !ifdef DEVELOP {
-;*=MAP1_CRUNCHED
-;!bin "map1.exo",,2
-;MAP1_CRUNCHED_END=*
+*=MAP1_CRUNCHED
+!bin "map1.exo",,2
+MAP1_CRUNCHED_END=*
 
-;*=MAP2_CRUNCHED
-;!bin "map2.exo",,2
-;MAP2_CRUNCHED_END=*
-
-*=TILE_MAP
-!bin "map.bin"
+*=MAP2_CRUNCHED
+!bin "map2.exo",,2
+MAP2_CRUNCHED_END=*
 
 *=TILE_CLR
 !bin "colors.bin"

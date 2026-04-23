@@ -26,58 +26,114 @@ JOYSTICK !zone {
     bcs .left
 
     pha
-    jsr SCROLL_R
-    pla
-
     ldx CUR_SPR
+    cpx #PLAYER_SPR
+    bne .right_move_only
+
+    jsr SCROLL_R
+    jmp .right_done
+
+.right_move_only
     inc SPR_X, x
+
+.right_done
+    pla
 
 .left
     asl
     bcs .down
 
     pha
-    jsr SCROLL_L
-    pla
-
     ldx CUR_SPR
+    cpx #PLAYER_SPR
+    bne .left_move_only
+
+    jsr SCROLL_L
+    jmp .left_done
+
+.left_move_only
     dec SPR_X, x
+
+.left_done
+    pla
 
 .down
     asl
     bcs .up
 
     pha
-    jsr SCROLL_D
-    pla
-
     ldx CUR_SPR
+    cpx #PLAYER_SPR
+    bne .down_move_only
+
+    ldy SPR_Y, x
+    cpy #CENTER_Y
+    bne .down_move_sprite
+    lda CAMERA_LOCK
+    beq +
+    cmp #1
+    beq .down_move_sprite
+    lda #0
+    sta CAMERA_LOCK
++
+    jsr SCROLL_D
+    jmp .down_done
+
+.down_move_sprite
+    cpy #SPRITES_MAX_Y
+    beq .down_done
+    inc SPR_Y, x
+    jsr sort_sprite_down
+    jmp .down_done
+
+.down_move_only
     ldy SPR_Y, x
     cpy #SPRITES_MAX_Y
-    beq .up
+    beq .down_done
     cpy #SPRITES_TOP_Y
-    beq .up
+    beq .down_done
     inc SPR_Y, x
-    pha
     jsr sort_sprite_down
+
+.down_done
     pla
 
 .up
     asl
     bcs .exit
 
-    jsr SCROLL_U
-
     ldx CUR_SPR
+    cpx #PLAYER_SPR
+    bne .up_move_only
+
+    ldy SPR_Y, x
+    cpy #CENTER_Y
+    bne .up_move_sprite
+    lda CAMERA_LOCK
+    beq +
+    cmp #2
+    beq .up_move_sprite
+    lda #0
+    sta CAMERA_LOCK
++
+    jsr SCROLL_U
+    jmp .exit
+
+.up_move_sprite
+    cpy #SPRITES_TOP_Y
+    beq .exit
+    dec SPR_Y, x
+    jsr sort_sprite_up
+    jmp .exit
+
+.up_move_only
     ldy SPR_Y, x
     cpy #FIRST_BADLINE+SCR_ROWS
     beq .exit
     cpy #SPRITES_TOP_Y
     beq .exit
     dec SPR_Y, x
-    pha
     jsr sort_sprite_up
-    pla
 
 .exit
     rts
@@ -86,7 +142,7 @@ JOYSTICK !zone {
 !if SPRITES = 0 {
 CUR_SPR !by 0
 } else {
-CUR_SPR !by SPRITES-1
+CUR_SPR !by PLAYER_SPR
 }
 
 sort_sprite_down !zone {

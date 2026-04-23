@@ -73,11 +73,11 @@ map2.exo: map2.exo.prg $(INC)
 	$(EXO) mem -B -l0x5400 -M256 -c $<,0x6000 -o $@
 
 #$(D64): $(CC1541) $(ENGINE_TC) $(ENGINE_EXO) map1.exo map2.exo
-#$(D64): $(CC1541) $(ENGINE_EXO) map1.exo map2.exo colors.tc screen.tc pixels.tc
-$(D64): $(CC1541) $(ENGINE_EXO) map.tc colors.tc screen.tc pixels.tc
+$(D64): $(CC1541) $(ENGINE_EXO) map1.exo map2.exo colors.tc screen.tc pixels.tc
+#$(D64): $(CC1541) $(ENGINE_EXO) map.tc colors.tc screen.tc pixels.tc
 	@echo '===> CC1541 $@'
-	$(Q)$(CC1541) -n $(OUT) -f "$(OUT)#a0,8,1" -w $(ENGINE_EXO) -f map -w map.tc -f colors -w colors.tc -f screen -w screen.tc -f pixels -w pixels.tc $(D64)
-#$(Q)$(CC1541) -n $(OUT) -f "$(OUT)#a0,8,1" -w $(ENGINE_EXO) -f map1 -w map1.exo -f map2 -w map2.exo -f colors -w colors.tc -f screen -w screen.tc -f pixels -w pixels.tc $(D64)
+	$(Q)$(CC1541) -n $(OUT) -f "$(OUT)#a0,8,1" -w $(ENGINE_EXO) -f map1 -w map1.exo -f map2 -w map2.exo -f colors -w colors.tc -f screen -w screen.tc -f pixels -w pixels.tc $(D64)
+#$(Q)$(CC1541) -n $(OUT) -f "$(OUT)#a0,8,1" -w $(ENGINE_EXO) -f map -w map.tc -f colors -w colors.tc -f screen -w screen.tc -f pixels -w pixels.tc $(D64)
 
 clean:
 	@echo '===> CLEAN'
