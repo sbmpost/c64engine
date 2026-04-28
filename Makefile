@@ -17,8 +17,9 @@ ENGINE_OBJ := $(ENGINE_ACME:.acme=.obj)
 ENGINE_TC := $(wildcard *.bin)
 
 map.bin.addr    := '\x00\x30'
-map1.exo.bin.addr := '\x00\x48'
-map2.exo.bin.addr := '\x00\x54'
+map1.exo.bin.addr := '\x00\x30'
+map2.exo.bin.addr := '\x00\x3a'
+map3.exo.bin.addr := '\x00\x44'
 colors.bin.addr := '\x00\x90'
 screen.bin.addr := '\x00\x96'
 pixels.bin.addr := '\x00\x9c'
@@ -66,17 +67,21 @@ $(ENGINE_EXO): $(ENGINE_OBJ) $(EXO)
 #%.exo: %.prg.exo $(INC)
 map1.exo: map1.exo.prg $(INC)
 	@echo '===> EXO $<'
-	$(EXO) mem -B -l0x4800 -M256 -c $<,0x6000 -o $@
+	$(EXO) mem -B -l0x3000 -M256 -c $<,0x7000 -o $@
 
 map2.exo: map2.exo.prg $(INC)
 	@echo '===> EXO $<'
-	$(EXO) mem -B -l0x5400 -M256 -c $<,0x6000 -o $@
+	$(EXO) mem -B -l0x3a00 -M256 -c $<,0x7000 -o $@
 
-#$(D64): $(CC1541) $(ENGINE_TC) $(ENGINE_EXO) map1.exo map2.exo
-$(D64): $(CC1541) $(ENGINE_EXO) map1.exo map2.exo colors.tc screen.tc pixels.tc
+map3.exo: map3.exo.prg $(INC)
+	@echo '===> EXO $<'
+	$(EXO) mem -B -l0x4400 -M256 -c $<,0x7000 -o $@
+
+#$(D64): $(CC1541) $(ENGINE_TC) $(ENGINE_EXO) map1.exo map2.exo map3.exo
+$(D64): $(CC1541) $(ENGINE_EXO) map1.exo map2.exo map3.exo colors.tc screen.tc pixels.tc
 #$(D64): $(CC1541) $(ENGINE_EXO) map.tc colors.tc screen.tc pixels.tc
 	@echo '===> CC1541 $@'
-	$(Q)$(CC1541) -n $(OUT) -f "$(OUT)#a0,8,1" -w $(ENGINE_EXO) -f map1 -w map1.exo -f map2 -w map2.exo -f colors -w colors.tc -f screen -w screen.tc -f pixels -w pixels.tc $(D64)
+	$(Q)$(CC1541) -n $(OUT) -f "$(OUT)#a0,8,1" -w $(ENGINE_EXO) -f map1 -w map1.exo -f map2 -w map2.exo -f map3 -w map3.exo -f colors -w colors.tc -f screen -w screen.tc -f pixels -w pixels.tc $(D64)
 #$(Q)$(CC1541) -n $(OUT) -f "$(OUT)#a0,8,1" -w $(ENGINE_EXO) -f map -w map.tc -f colors -w colors.tc -f screen -w screen.tc -f pixels -w pixels.tc $(D64)
 
 clean:

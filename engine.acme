@@ -148,6 +148,11 @@ SPR_F
     lda #%00001000
     sta VIC_ADDR_SELECT
 
+    ; ensure ECM is cleared (safe for VICE reload)
+;    lda VIC_CONTROL_Y
+;    and #$bf
+;    sta VIC_CONTROL_Y
+
     +set %10101010, VIC_SPR_MULTI
     +set BROWN, VIC_SPR_COLOR_01
     +set GREY,  VIC_SPR_COLOR_11
@@ -201,7 +206,7 @@ SPR_F
 ;    ldx #>TILE_MAP
 ;    ldx #$40
 
-    ldx #$25
+    ldx #$05
     stx C_MAP_POS_HI
     stx R_MAP_POS_HI
 
@@ -214,10 +219,10 @@ SPR_F
     stx C_PIX_POS_HI
     stx R_PIX_POS_LO
     stx R_PIX_POS_HI
-    stx MAP_NR
+    stx CAMERA_LOCK
 
     ldx #1
-    stx CAMERA_LOCK
+    stx MAP_NR
     ;----------------------------------
 
 ;-------------------------------------------------------------------------------
@@ -248,6 +253,9 @@ tile_map1
 tile_map2
     !tx "map2"
     !by 0
+tile_map3
+    !tx "map3"
+    !by 0
 ;tile_map
 ;    !tx "map"
 ;    !by 0
@@ -273,6 +281,11 @@ tile_pix
     jsr loadraw
     bcs .load_error
 
+    ldx #<tile_map3
+    ldy #>tile_map3
+    jsr loadraw
+    bcs .load_error
+
     ldx #<tile_clr
     ldy #>tile_clr
     jsr loadcompd
@@ -289,9 +302,9 @@ tile_pix
     bcs .load_error
 }
 
-    lda #<MAP1_CRUNCHED_END
+    lda #<MAP2_CRUNCHED_END
     sta crunched_address+1
-    lda #>MAP1_CRUNCHED_END
+    lda #>MAP2_CRUNCHED_END
     sta crunched_address+2
     jsr exod_decrunch
 
@@ -416,6 +429,10 @@ MAP1_CRUNCHED_END=*
 *=MAP2_CRUNCHED
 !bin "map2.exo",,2
 MAP2_CRUNCHED_END=*
+
+*=MAP3_CRUNCHED
+!bin "map3.exo",,2
+MAP3_CRUNCHED_END=*
 
 *=TILE_CLR
 !bin "colors.bin"

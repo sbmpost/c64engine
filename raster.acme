@@ -435,9 +435,9 @@ last_irq
 
     ; scrolling down: lock based on R_MAP_POS_HI
     lda R_MAP_POS_HI
-    cmp #(MAP_HEIGHT/2 * TILE_ROWS - SCROLL_ROWS + 1) / TILE_ROWS
+    cmp #(MAP_HEIGHT/3 * TILE_ROWS - SCROLL_ROWS + 1) / TILE_ROWS
     bcc .copy_tiles
-    cmp #MAP_HEIGHT/2 + 1
+    cmp #MAP_HEIGHT/3 + 1
     bcs .copy_tiles
     lda SOFT_Y
     bne .copy_tiles
@@ -557,19 +557,24 @@ EMPTY_INTERRUPT = *-1
 
 .edge_down
     lda MAP_NR
-    beq +
-    jmp .copy_tiles         ; MAP_NR == 1: bottom of map, no load
+    cmp #2
+    bne +
+    jmp .copy_tiles         ; MAP_NR == 2: bottom of map, no load
 +
-
-    lda #1
+    clc
+    adc #1
     sta MAP_NR
-    lda #<MAP2_CRUNCHED_END
+    tax
+    lda crunched_ends_lo, x
     sta crunched_address+1
-    lda #>MAP2_CRUNCHED_END
+    lda crunched_ends_hi, x
     sta crunched_address+2
+    lda VIC_CONTROL_Y
+    ora #$40
+    sta VIC_CONTROL_Y
     jsr exod_decrunch
 
-    lda #$ff;
+    lda #$ff
     sta R_MAP_POS_HI
     lda #(SCROLL_ROWS-1)/TILE_ROWS - 1
     sta C_MAP_POS_HI
@@ -599,20 +604,23 @@ EMPTY_INTERRUPT = *-1
     bne +
     jmp .copy_tiles         ; MAP_NR == 0: top of map, no load
 +
-
-    lda #0
+    sec
+    sbc #1
     sta MAP_NR
-    lda #<MAP1_CRUNCHED_END
+    tax
+    lda crunched_ends_lo, x
     sta crunched_address+1
-    lda #>MAP1_CRUNCHED_END
+    lda crunched_ends_hi, x
     sta crunched_address+2
+    lda VIC_CONTROL_Y
+    ora #$40
+    sta VIC_CONTROL_Y
     jsr exod_decrunch
 
-    lda #(MAP_HEIGHT/2 * TILE_ROWS - SCROLL_ROWS + 1) / TILE_ROWS
+    lda #(MAP_HEIGHT/3 * TILE_ROWS - SCROLL_ROWS + 1) / TILE_ROWS
     sta R_MAP_POS_HI
     sta C_MAP_POS_HI
 
-;    lda #(MAP_HEIGHT/2 * TILE_ROWS - SCROLL_ROWS + 1) AND (TILE_ROWS - 1)
     lda #0
     sta TILE_ROW
 
@@ -644,5 +652,11 @@ EMPTY_INTERRUPT = *-1
     sta SCROLL_L_R
 +
     jsr fill_screen
+    lda VIC_CONTROL_Y
+    and #$bf
+    sta VIC_CONTROL_Y
     jmp .play_song
+
+crunched_ends_lo !by <MAP1_CRUNCHED_END, <MAP2_CRUNCHED_END, <MAP3_CRUNCHED_END
+crunched_ends_hi !by >MAP1_CRUNCHED_END, >MAP2_CRUNCHED_END, >MAP3_CRUNCHED_END
 }

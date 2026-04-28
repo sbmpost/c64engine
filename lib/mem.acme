@@ -96,10 +96,11 @@ SONG_DATA       = $2000; - $2fff,   4k
 
 DISK_LOADER_SRC = $3000; ~ $3200
 DISK_INSTALLER  = $4000; ~ $5b00
-FREE_AREA       = $3000; - $47ff,   6k
-MAP1_CRUNCHED   = $4800; ~ $4bff,   3k
-MAP2_CRUNCHED   = $5400; ~ $5fff,   3k
-TILE_MAP        = $6000; - $8fff,  12k
+MAP1_CRUNCHED   = $3000; ~ $376c,   2k
+MAP2_CRUNCHED   = $3a00; ~ $41f6,   2k
+MAP3_CRUNCHED   = $4400; ~ $49a2, 1.5k
+FREE_AREA       = $4a00; - $6fff, 9.5k
+TILE_MAP        = $7000; - $8fff,   8k
 TILE_CLR        = $9000; - $95ff,   1.5k
 TILE_SCR        = $9600; - $9bff,   1.5k
 TILE_PIX        = $9c00; - $bfff,   9k
